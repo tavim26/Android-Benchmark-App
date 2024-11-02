@@ -44,14 +44,13 @@ fun BenchmarkScreen(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Bara de scroll pentru gruparea butoanelor
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    // Butoane cu dimensiuni egale și centrate
+
                     Button(
                         onClick = {
                             clearBenchmarkResults(context)
@@ -59,8 +58,9 @@ fun BenchmarkScreen(modifier: Modifier = Modifier) {
                             benchmarkResults = readBenchmarkResults(context)
                         },
                         modifier = Modifier
-                            .size(150.dp) // Dimensiune fixă pentru pătratul butonului
-                            .padding(8.dp) // Margine pentru butoane
+                            .size(150.dp)
+                            .padding(8.dp)
+
                     ) {
                         Text("Run CPU Benchmark")
                     }
@@ -72,7 +72,7 @@ fun BenchmarkScreen(modifier: Modifier = Modifier) {
                             benchmarkResults = readBenchmarkResults(context)
                         },
                         modifier = Modifier
-                            .size(150.dp) // Dimensiune fixă pentru pătratul butonului
+                            .size(150.dp)
                             .padding(8.dp)
                     ) {
                         Text("Run GPU Benchmark")
@@ -92,7 +92,7 @@ fun BenchmarkScreen(modifier: Modifier = Modifier) {
                             benchmarkResults = readBenchmarkResults(context)
                         },
                         modifier = Modifier
-                            .size(150.dp) // Dimensiune fixă pentru pătratul butonului
+                            .size(150.dp)
                             .padding(8.dp)
                     ) {
                         Text("Run Memory Benchmark")
@@ -105,7 +105,7 @@ fun BenchmarkScreen(modifier: Modifier = Modifier) {
                             benchmarkResults = readBenchmarkResults(context)
                         },
                         modifier = Modifier
-                            .size(150.dp) // Dimensiune fixă pentru pătratul butonului
+                            .size(150.dp)
                             .padding(8.dp)
                     ) {
                         Text("Show Hardware Info")
