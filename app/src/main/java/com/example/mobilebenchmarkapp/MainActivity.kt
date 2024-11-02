@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.example.mobilebenchmarkapp.ui.theme.MobileBenchmarkAppTheme
 import com.example.mobilebenchmarkapp.benchmarks.*
 import java.io.File
+import androidx.compose.foundation.lazy.LazyColumn
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,53 +44,81 @@ fun BenchmarkScreen(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Button for CPU Benchmark
-        Button(onClick = {
-            clearBenchmarkResults(context)
-            runCpuBenchmark(context) // Apelează funcția de benchmark
-            benchmarkResults = readBenchmarkResults(context) // Citește rezultatul
-        }, modifier = Modifier.fillMaxWidth()) {
-            Text("Run CPU Benchmark")
-        }
+        // Bara de scroll pentru gruparea butoanelor
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    // Butoane cu dimensiuni egale și centrate
+                    Button(
+                        onClick = {
+                            clearBenchmarkResults(context)
+                            runCpuBenchmark(context)
+                            benchmarkResults = readBenchmarkResults(context)
+                        },
+                        modifier = Modifier
+                            .size(150.dp) // Dimensiune fixă pentru pătratul butonului
+                            .padding(8.dp) // Margine pentru butoane
+                    ) {
+                        Text("Run CPU Benchmark")
+                    }
 
-        Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = {
+                            clearBenchmarkResults(context)
+                            runGpuBenchmark(context)
+                            benchmarkResults = readBenchmarkResults(context)
+                        },
+                        modifier = Modifier
+                            .size(150.dp) // Dimensiune fixă pentru pătratul butonului
+                            .padding(8.dp)
+                    ) {
+                        Text("Run GPU Benchmark")
+                    }
+                }
 
-        // Button for Memory Benchmark
-        Button(onClick = {
-            clearBenchmarkResults(context)
-            runMemoryBenchmark(context)
-            benchmarkResults = readBenchmarkResults(context)
-        }, modifier = Modifier.fillMaxWidth()) {
-            Text("Run Memory Benchmark")
-        }
+                Spacer(modifier = Modifier.height(8.dp))
 
-        Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        onClick = {
+                            clearBenchmarkResults(context)
+                            runMemoryBenchmark(context)
+                            benchmarkResults = readBenchmarkResults(context)
+                        },
+                        modifier = Modifier
+                            .size(150.dp) // Dimensiune fixă pentru pătratul butonului
+                            .padding(8.dp)
+                    ) {
+                        Text("Run Memory Benchmark")
+                    }
 
-        // Button for GPU Benchmark
-        Button(onClick = {
-            clearBenchmarkResults(context)
-            runGpuBenchmark(context)
-            benchmarkResults = readBenchmarkResults(context)
-        }, modifier = Modifier.fillMaxWidth()) {
-            Text("Run GPU Benchmark")
-        }
+                    Button(
+                        onClick = {
+                            clearBenchmarkResults(context)
+                            showHardwareInfo(context)
+                            benchmarkResults = readBenchmarkResults(context)
+                        },
+                        modifier = Modifier
+                            .size(150.dp) // Dimensiune fixă pentru pătratul butonului
+                            .padding(8.dp)
+                    ) {
+                        Text("Show Hardware Info")
+                    }
+                }
 
-        Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-        // Button for Hardware Information
-        Button(onClick = {
-            clearBenchmarkResults(context)
-            showHardwareInfo(context)
-            benchmarkResults = readBenchmarkResults(context)
-        }, modifier = Modifier.fillMaxWidth()) {
-            Text("Show Hardware Information")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Display benchmark result
-        if (benchmarkResults.isNotEmpty()) {
-            Text("Result:\n$benchmarkResults")
+                // Afișare rezultat benchmark
+                if (benchmarkResults.isNotEmpty()) {
+                    Text("Result:\n$benchmarkResults")
+                }
+            }
         }
     }
 }
