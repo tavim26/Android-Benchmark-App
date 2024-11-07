@@ -86,7 +86,8 @@ fun BenchmarkScreen(modifier: Modifier = Modifier) {
                     buttonText2 = "Show Hardware Info",
                     onClick2 = {
                         clearBenchmarkResults(context)
-                        benchmarkResults = hardwareInfo.getInfo()
+                        hardwareInfo.getInfo()
+                        benchmarkResults = readBenchmarkResults(context)
                     }
                 )
             }
