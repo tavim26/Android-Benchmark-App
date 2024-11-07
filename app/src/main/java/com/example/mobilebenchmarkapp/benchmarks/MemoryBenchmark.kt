@@ -1,12 +1,14 @@
 package com.example.mobilebenchmarkapp.benchmarks
 
-import java.io.File
 import android.content.Context
-import kotlin.system.measureTimeMillis
+import java.io.File
 
+class MemoryBenchmark(private val context: Context) {
 
-
-fun runMemoryBenchmark(context: Context) {
-    val file = File(context.filesDir, "benchmark_results.txt")
-    file.writeText("Memory Benchmark Results:\n")
+    fun run()
+    {
+        val file = File(context.filesDir, "benchmark_results.txt")
+        file.writeText("Memory Benchmark Results:\n")
+        // TODO
+    }
 }
