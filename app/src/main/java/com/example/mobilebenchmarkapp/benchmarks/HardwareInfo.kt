@@ -19,9 +19,15 @@ class HardwareInfo(private val context: Context)
 
     fun getInfo()
     {
+
+        //serviciul de gestionare al activitatilor
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+
+        //serviciul de gestionare al bateriei
         val batteryManager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
 
+
+        //obtinere info despre memoria totala si disponibila in momentul masurarii
         val memoryInfo = ActivityManager.MemoryInfo()
         activityManager.getMemoryInfo(memoryInfo)
         val totalRamMb = memoryInfo.totalMem / (1024 * 1024)
@@ -29,12 +35,15 @@ class HardwareInfo(private val context: Context)
         val availableRamMb = memoryInfo.availMem / (1024 * 1024)
         val availableRamGb = availableRamMb / 1024
 
+        //informatii despre stocare interna
         val statFs = StatFs(Environment.getDataDirectory().path)
         val totalStorageMb = (statFs.blockCountLong * statFs.blockSizeLong) / (1024 * 1024)
         val totalStorageGb = totalStorageMb / 1024
         val availableStorageMb = (statFs.availableBlocksLong * statFs.blockSizeLong) / (1024 * 1024)
         val availableStorageGb = availableStorageMb / 1024
 
+
+        //informatii despre baterie (stare de sanatate)
         val batteryCapacity = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
 
         val batteryIntent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
@@ -49,15 +58,22 @@ class HardwareInfo(private val context: Context)
         }
 
 
+
+        //obtinere informatii despre ecranul dispozitivului
         val displayMetrics = context.resources.displayMetrics
         val screenWidth = displayMetrics.widthPixels
         val screenHeight = displayMetrics.heightPixels
         val screenDensity = displayMetrics.densityDpi
+
+        //calcul dimensiune aproximativa a ecranului in inch
         val screenSizeInches = sqrt(
             (screenWidth / displayMetrics.xdpi.toDouble()).pow(2.0) +
                     (screenHeight / displayMetrics.ydpi.toDouble()).pow(2.0)
         )
 
+
+
+        //formatare informatii pentru afisare
         val info = """
             Complete Hardware Overview:
             - Device Model: ${Build.MODEL} (${Build.MANUFACTURER})
@@ -87,7 +103,7 @@ class HardwareInfo(private val context: Context)
         """.trimIndent()
 
 
-        // Scrierea informațiilor în fișier
+        // scrierea informatiilor in fisier
         benchmarkFile.writeText("Hardware Information:\n")
         benchmarkFile.appendText(info)
     }

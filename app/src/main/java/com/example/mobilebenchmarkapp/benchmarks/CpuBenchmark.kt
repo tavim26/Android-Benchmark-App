@@ -16,7 +16,8 @@ class CpuBenchmark(private val context: Context) {
         runQuickSortTest()
     }
 
-    private fun runFactorialTest() {
+    private fun runFactorialTest()
+    {
         val time = measureTimeMillis {
             calculateFactorial(100000)
         }
