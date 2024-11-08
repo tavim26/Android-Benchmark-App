@@ -22,7 +22,6 @@ class MainActivity : ComponentActivity()
     {
         super.onCreate(savedInstanceState)
 
-
         setContent {
 
             //setare tema principala a aplicatiei folosind jetpack compose

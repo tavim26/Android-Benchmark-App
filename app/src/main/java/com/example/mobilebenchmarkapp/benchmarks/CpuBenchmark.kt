@@ -10,6 +10,8 @@ class CpuBenchmark(private val context: Context) {
 
     fun run() {
         benchmarkFile.writeText("CPU Benchmark Results:\n")
+
+        //rulare fiecare test in parte
         runFactorialTest()
         runFibonacciTest()
         runBubbleSortTest()
@@ -58,6 +60,7 @@ class CpuBenchmark(private val context: Context) {
 
     private fun generateFibonacci(n: Int): Long
     {
+        //variabile de tipul Long in Kotlin
         var a = 0L
         var b = 1L
         for (i in 2..n)
@@ -91,7 +94,11 @@ class CpuBenchmark(private val context: Context) {
     {
         if (low < high)
         {
+
+            //determina pozitia pivotului
             val pi = partition(array, low, high)
+
+            //sorteaza recursiv subsirurile situate la stanga si la dreapta pivotului
             quickSort(array, low, pi - 1)
             quickSort(array, pi + 1, high)
         }
@@ -119,6 +126,8 @@ class CpuBenchmark(private val context: Context) {
         return i + 1
     }
 
+
+    //generare array cu elemente random de lungimea size cu elemente intre 0 si 1000
     private fun generateRandomArray(size: Int): IntArray
     {
         return IntArray(size) { (0..1000).random() }
