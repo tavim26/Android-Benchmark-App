@@ -1,5 +1,6 @@
 package com.example.mobilebenchmarkapp.main
 
+import GpuBenchmark
 import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity

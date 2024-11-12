@@ -1,67 +1,127 @@
-package com.example.mobilebenchmarkapp.benchmarks
-
 import android.content.Context
 import android.opengl.GLES20
+import android.opengl.GLSurfaceView
 import java.io.File
-import kotlin.system.measureTimeMillis
+import java.io.IOException
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.FloatBuffer
 
-class GpuBenchmark(private val context: Context) {
+class GpuBenchmark(private val context: Context) : GLSurfaceView.Renderer {
 
-    fun run() {
-        val file = File(context.filesDir, "benchmark_results.txt")
-        val renderingTime = measureTimeMillis { run3DRenderingTest() }
-        file.appendText("GPU Benchmark - 3D Rendering Time: $renderingTime ms\n")
-    }
+    private val benchmarkFile = File(context.filesDir, "benchmark_results.txt")
+    private var previousFrameTime: Long = 0
+    private var accumulatedTime: Double = 0.0
+    private var frameCount: Int = 0
+    private lateinit var vertexBuffer: FloatBuffer
+    private var programHandle: Int = 0
 
-    private fun run3DRenderingTest() {
-        initOpenGL()
-        val program = createShaderProgram()
-
-        // Simplificăm exemplele de obiecte (cube și piramidă), înlăturând funcții separate
-        val simpleCube = floatArrayOf(
-            -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f
-        )
-        renderObject(program, simpleCube)
-    }
-
-    private fun initOpenGL() {
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
-        GLES20.glEnable(GLES20.GL_DEPTH_TEST)
-        GLES20.glClearColor(0.1f, 0.1f, 0.3f, 1.0f)
-    }
-
-    private fun createShaderProgram(): Int {
-        val vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, loadShaderSource("shader.vert"))
-        val fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, loadShaderSource("shader.frag"))
-        return GLES20.glCreateProgram().apply {
-            GLES20.glAttachShader(this, vertexShader)
-            GLES20.glAttachShader(this, fragmentShader)
-            GLES20.glLinkProgram(this)
-            GLES20.glUseProgram(this)
+    init {
+        if (!benchmarkFile.exists()) {
+            try {
+                benchmarkFile.createNewFile()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
         }
     }
 
-    private fun loadShaderSource(filename: String): String {
-        return context.assets.open("com.example.mobilebenchmarkapp.shaders/$filename").bufferedReader().use { it.readText() }
+    fun run() {
+        val glSurfaceView = GLSurfaceView(context)
+        glSurfaceView.setEGLContextClientVersion(2)
+        glSurfaceView.setRenderer(this)
+        glSurfaceView.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
     }
 
-    private fun renderObject(program: Int, vertices: FloatArray) {
-        val vertexBuffer = java.nio.ByteBuffer.allocateDirect(vertices.size * 4)
-            .order(java.nio.ByteOrder.nativeOrder())
-            .asFloatBuffer()
-            .apply { put(vertices).position(0) }
+    override fun onSurfaceCreated(gl: javax.microedition.khronos.opengles.GL10?, config: javax.microedition.khronos.egl.EGLConfig?) {
+        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f)
+        previousFrameTime = System.nanoTime()
 
-        val positionHandle = GLES20.glGetAttribLocation(program, "vPosition")
+        // Inițializarea triunghiului
+        val vertices = floatArrayOf(
+            0.0f, 0.5f, 0.0f,  // Vârf superior
+            -0.5f, -0.5f, 0.0f, // Vârf stânga jos
+            0.5f, -0.5f, 0.0f  // Vârf dreapta jos
+        )
+
+        vertexBuffer = ByteBuffer.allocateDirect(vertices.size * 4)
+            .order(ByteOrder.nativeOrder())
+            .asFloatBuffer()
+            .put(vertices)
+        vertexBuffer.position(0)
+
+        val vertexShaderCode = """
+            attribute vec4 vPosition;
+            void main() {
+                gl_Position = vPosition;
+            }
+        """.trimIndent()
+
+        val fragmentShaderCode = """
+            precision mediump float;
+            uniform vec4 vColor;
+            void main() {
+                gl_FragColor = vColor;
+            }
+        """.trimIndent()
+
+        val vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode)
+        val fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode)
+        programHandle = GLES20.glCreateProgram().also {
+            GLES20.glAttachShader(it, vertexShader)
+            GLES20.glAttachShader(it, fragmentShader)
+            GLES20.glLinkProgram(it)
+        }
+    }
+
+    override fun onSurfaceChanged(gl: javax.microedition.khronos.opengles.GL10?, width: Int, height: Int) {
+        GLES20.glViewport(0, 0, width, height)
+    }
+
+    override fun onDrawFrame(gl: javax.microedition.khronos.opengles.GL10?) {
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
+        GLES20.glUseProgram(programHandle)
+
+        val positionHandle = GLES20.glGetAttribLocation(programHandle, "vPosition")
         GLES20.glEnableVertexAttribArray(positionHandle)
-        GLES20.glVertexAttribPointer(positionHandle, 3, GLES20.GL_FLOAT, false, 0, vertexBuffer)
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.size / 3)
+        GLES20.glVertexAttribPointer(positionHandle, 3, GLES20.GL_FLOAT, false, 12, vertexBuffer)
+
+        val colorHandle = GLES20.glGetUniformLocation(programHandle, "vColor")
+        GLES20.glUniform4f(colorHandle, 0.6f, 0.4f, 0.7f, 1.0f)
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3)
         GLES20.glDisableVertexAttribArray(positionHandle)
+
+        // Măsurarea timpului de randare pe cadru
+        val currentTime = System.nanoTime()
+        val frameTimeMs = (currentTime - previousFrameTime) / 1_000_000.0 // Conversie în milisecunde
+        previousFrameTime = currentTime
+
+        // Acumularea timpului și numărului de cadre
+        accumulatedTime += frameTimeMs
+        frameCount++
+
+        // Scrierea în fișier la fiecare 60 de cadre
+        if (frameCount >= 60) {
+            val averageFrameTime = accumulatedTime / frameCount
+            writeBenchmarkResults(averageFrameTime)
+            accumulatedTime = 0.0
+            frameCount = 0
+        }
+    }
+
+    private fun writeBenchmarkResults(averageFrameTime: Double) {
+        try {
+            benchmarkFile.appendText("Average Frame Time (last 60 frames): $averageFrameTime ms\n")
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
     }
 
     private fun loadShader(type: Int, shaderCode: String): Int {
-        return GLES20.glCreateShader(type).also {
-            GLES20.glShaderSource(it, shaderCode)
-            GLES20.glCompileShader(it)
+        return GLES20.glCreateShader(type).also { shader ->
+            GLES20.glShaderSource(shader, shaderCode)
+            GLES20.glCompileShader(shader)
         }
     }
 }
