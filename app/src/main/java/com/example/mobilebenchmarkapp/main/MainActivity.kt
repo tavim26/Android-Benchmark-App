@@ -35,88 +35,104 @@ class MainActivity : ComponentActivity()
         }
     }
 }
-
-
-
 @Composable
-fun BenchmarkScreen(modifier: Modifier = Modifier)
-{
+fun BenchmarkScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    var benchmarkResults by remember { mutableStateOf("") }
-    var hardwareInfo by remember { mutableStateOf("") }
+    var cpuResults by remember { mutableStateOf("CPU Benchmark: \n") }
+    var gpuResults by remember { mutableStateOf("GPU Benchmark: \n") }
+    var memoryResults by remember { mutableStateOf("Memory Benchmark: \n") }
+    var hardwareInfoResults by remember { mutableStateOf("Hardware Information: \n") }
 
-
-    val cpuBenchmark = CpuBenchmark { result -> benchmarkResults += "$result\n" }
-   // val gpuBenchmark = GpuBenchmark { result -> benchmarkResults += "$result\n" }
-    val memoryBenchmark = MemoryBenchmark { result -> benchmarkResults += "$result\n" }
+    val cpuBenchmark = CpuBenchmark { result ->
+        cpuResults += "\n$result" // Append new CPU benchmark result
+    }
+    val memoryBenchmark = MemoryBenchmark { result ->
+        memoryResults += "\n$result" // Append new Memory benchmark result
+    }
     val hardwareInfoProvider = HardwareInfo(context)
 
     Column(
-        modifier = modifier.fillMaxSize().padding(16.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("Mobile Benchmark App", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Buttons for each benchmark
+        BenchmarkButtonRow(
+            buttonText1 = "Run CPU Benchmark",
+            onClick1 = {
+                cpuResults = "CPU Benchmark: \n"
+                cpuBenchmark.run()
+            },
+            buttonText2 = "Run GPU Benchmark",
+            onClick2 = {
+                gpuResults = "GPU Benchmark: \n"
+                // Implement GPU benchmark here
+            }
+        )
+
+        BenchmarkButtonRow(
+            buttonText1 = "Run Memory Benchmark",
+            onClick1 = {
+                memoryResults = "Memory Benchmark: \n"
+                memoryBenchmark.run()
+            },
+            buttonText2 = "Show Hardware Info",
+            onClick2 = {
+                hardwareInfoResults = "Hardware Information: \n${hardwareInfoProvider.getInfoAsString()}"
+            }
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Butoane pentru rulare benchmark-uri
         LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(8.dp)
         ) {
+            item { Text(cpuResults, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyMedium) }
+
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+
+            item { Text(gpuResults, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyMedium) }
+
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+
+            item { Text(memoryResults, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyMedium) }
+
+
             item {
-                // Primul rând de butoane
-                BenchmarkButtonRow(
-                    buttonText1 = "Run CPU Benchmark",
-                    onClick1 = { cpuBenchmark.run() },
-                    buttonText2 = "Run GPU Benchmark",
-                    onClick2 = {  }
-                )
-
-                // Al doilea rând de butoane
-                BenchmarkButtonRow(
-                    buttonText1 = "Run Memory Benchmark",
-                    onClick1 = { memoryBenchmark.run() },
-                    buttonText2 = "Show Hardware Info",
-                    onClick2 = {
-                        // Obține și afișează informațiile hardware
-                        hardwareInfoProvider.getInfo(infoTextView = null) 
-                        hardwareInfo = hardwareInfoProvider.getInfoAsString()
-                    }
+                Text(
+                    hardwareInfoResults,
+                    modifier = Modifier.padding(8.dp),
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
 
-        // Afișare rezultate benchmark
-        if (benchmarkResults.isNotEmpty()) {
-            LazyColumn(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-                item {
-                    Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(4.dp)) {
-                        Text(text = benchmarkResults, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-            }
-        }
-
-        // Afișare informații hardware
-        if (hardwareInfo.isNotEmpty()) {
-            LazyColumn(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-                item {
-                    Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(4.dp)) {
-                        Text(text = hardwareInfo, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-            }
-        }
     }
 }
 
 
 
-//composable pentru fiecare rand de butoane
+@Composable
+fun LazyColumnSection(title: String, content: String) {
+    Spacer(modifier = Modifier.height(16.dp))
+    Text(title, style = MaterialTheme.typography.headlineSmall)
+    LazyColumn(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        item {
+            Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(4.dp)) {
+                Text(text = content, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
 
 @Composable
 fun BenchmarkButtonRow(
