@@ -1,6 +1,6 @@
 package com.example.mobilebenchmarkapp.main
 
-import GpuBenchmark
+import HardwareInfo
 import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -25,13 +25,10 @@ class MainActivity : ComponentActivity()
 
         setContent {
 
-            //setare tema principala a aplicatiei folosind jetpack compose
             MobileBenchmarkAppTheme {
 
-                //scaffold ofera structura pentru UI
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
-                    //apel functie pentru afisare ecran principal
                     BenchmarkScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
@@ -41,71 +38,51 @@ class MainActivity : ComponentActivity()
 
 
 
-
-//composable pentru ecranul principal al aplicatiei
 @Composable
-fun BenchmarkScreen(modifier: Modifier = Modifier) {
-    val context = LocalContext.current  //conext curent aplicatie
-    var benchmarkResults by remember { mutableStateOf("") } //stocare rezultate de benchmark
+fun BenchmarkScreen(modifier: Modifier = Modifier)
+{
+    val context = LocalContext.current
+    var benchmarkResults by remember { mutableStateOf("") }
+    var hardwareInfo by remember { mutableStateOf("") }
 
-    // instantiere obiecte de benchmark
-    val cpuBenchmark = CpuBenchmark(context)
-    val gpuBenchmark = GpuBenchmark(context)
-    val memoryBenchmark = MemoryBenchmark(context)
-    val hardwareInfo = HardwareInfo(context)
+
+    val cpuBenchmark = CpuBenchmark { result -> benchmarkResults += "$result\n" }
+   // val gpuBenchmark = GpuBenchmark { result -> benchmarkResults += "$result\n" }
+    val memoryBenchmark = MemoryBenchmark { result -> benchmarkResults += "$result\n" }
+    val hardwareInfoProvider = HardwareInfo(context)
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        //titlul aplicatiei
         Text("Mobile Benchmark App", style = MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Butoane pentru benchmark, puse in lazycolumn pentru flexibilitate
+        // Butoane pentru rulare benchmark-uri
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
-            //primul rand butoane (CPU si GPU benchmark)
             item {
+                // Primul rând de butoane
                 BenchmarkButtonRow(
                     buttonText1 = "Run CPU Benchmark",
-                    onClick1 = {
-                        clearBenchmarkResults(context)
-                        cpuBenchmark.run()
-                        benchmarkResults = readBenchmarkResults(context)
-                    },
+                    onClick1 = { cpuBenchmark.run() },
                     buttonText2 = "Run GPU Benchmark",
-                    onClick2 = {
-                        clearBenchmarkResults(context)
-                        gpuBenchmark.run()
-                        benchmarkResults = readBenchmarkResults(context)
-                    }
+                    onClick2 = {  }
                 )
-            }
 
-            item {
-
-                //al doilea rand de butoane (Memory si HardwareInfo)
+                // Al doilea rând de butoane
                 BenchmarkButtonRow(
                     buttonText1 = "Run Memory Benchmark",
-                    onClick1 = {
-                        clearBenchmarkResults(context)
-                        memoryBenchmark.run()
-                        benchmarkResults = readBenchmarkResults(context)
-                    },
+                    onClick1 = { memoryBenchmark.run() },
                     buttonText2 = "Show Hardware Info",
                     onClick2 = {
-                        clearBenchmarkResults(context)
-                        hardwareInfo.getInfo()
-                        benchmarkResults = readBenchmarkResults(context)
+                        // Obține și afișează informațiile hardware
+                        hardwareInfoProvider.getInfo(infoTextView = null) 
+                        hardwareInfo = hardwareInfoProvider.getInfoAsString()
                     }
                 )
             }
@@ -113,42 +90,30 @@ fun BenchmarkScreen(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // afisare rezultate benchmark
-        if (benchmarkResults.isNotEmpty())
-        {
-            // Scroll pentru rezultate
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(8.dp)
-            ) {
+        // Afișare rezultate benchmark
+        if (benchmarkResults.isNotEmpty()) {
+            LazyColumn(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+                item {
+                    Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(4.dp)) {
+                        Text(text = benchmarkResults, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
 
-                //rezultate puse intr-o caseta
-
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    item {
-
-                        //rez puse intr-un card
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            elevation = CardDefaults.cardElevation(4.dp)
-                        ) {
-                            Text(
-                                text = "Results:\n$benchmarkResults",
-                                modifier = Modifier.padding(8.dp),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
+        // Afișare informații hardware
+        if (hardwareInfo.isNotEmpty()) {
+            LazyColumn(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+                item {
+                    Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(4.dp)) {
+                        Text(text = hardwareInfo, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
         }
     }
 }
+
 
 
 //composable pentru fiecare rand de butoane
