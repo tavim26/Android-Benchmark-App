@@ -1,5 +1,6 @@
 package com.example.mobilebenchmarkapp.main
 
+import GpuBenchmark
 import HardwareInfo
 import android.content.Context
 import android.os.Bundle
@@ -43,12 +44,9 @@ fun BenchmarkScreen(modifier: Modifier = Modifier) {
     var memoryResults by remember { mutableStateOf("Memory Benchmark: \n") }
     var hardwareInfoResults by remember { mutableStateOf("Hardware Information: \n") }
 
-    val cpuBenchmark = CpuBenchmark { result ->
-        cpuResults += "\n$result" // Append new CPU benchmark result
-    }
-    val memoryBenchmark = MemoryBenchmark { result ->
-        memoryResults += "\n$result" // Append new Memory benchmark result
-    }
+    val cpuBenchmark = CpuBenchmark { result -> cpuResults += "\n$result" }
+    val memoryBenchmark = MemoryBenchmark { result -> memoryResults += "\n$result" }
+    val gpuBenchmark = GpuBenchmark(context) { result -> gpuResults += "\n$result" }
     val hardwareInfoProvider = HardwareInfo(context)
 
     Column(
@@ -59,9 +57,9 @@ fun BenchmarkScreen(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("Mobile Benchmark App", style = MaterialTheme.typography.headlineMedium)
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Buttons for each benchmark
         BenchmarkButtonRow(
             buttonText1 = "Run CPU Benchmark",
             onClick1 = {
@@ -71,7 +69,7 @@ fun BenchmarkScreen(modifier: Modifier = Modifier) {
             buttonText2 = "Run GPU Benchmark",
             onClick2 = {
                 gpuResults = "GPU Benchmark: \n"
-                // Implement GPU benchmark here
+                gpuBenchmark.run()
             }
         )
 
@@ -95,44 +93,17 @@ fun BenchmarkScreen(modifier: Modifier = Modifier) {
                 .weight(1f)
                 .padding(8.dp)
         ) {
-            item { Text(cpuResults, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyMedium) }
-
-            item { Spacer(modifier = Modifier.height(16.dp)) }
-
-            item { Text(gpuResults, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyMedium) }
-
-            item { Spacer(modifier = Modifier.height(16.dp)) }
-
-            item { Text(memoryResults, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyMedium) }
-
-
-            item {
-                Text(
-                    hardwareInfoResults,
-                    modifier = Modifier.padding(8.dp),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-
-
-    }
-}
-
-
-
-@Composable
-fun LazyColumnSection(title: String, content: String) {
-    Spacer(modifier = Modifier.height(16.dp))
-    Text(title, style = MaterialTheme.typography.headlineSmall)
-    LazyColumn(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-        item {
-            Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(4.dp)) {
-                Text(text = content, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyMedium)
-            }
+            item { Text(cpuResults, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyLarge) }
+            item { Text(gpuResults, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyLarge) }
+            item { Text(memoryResults, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyLarge) }
+            item { Text(hardwareInfoResults, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodyLarge) }
         }
     }
 }
+
+
+
+
 
 @Composable
 fun BenchmarkButtonRow(
@@ -166,22 +137,3 @@ fun BenchmarkButtonRow(
 }
 
 
-//functie pentru stergerea rezultatelor anterioare din fisier
-private fun clearBenchmarkResults(context: Context)
-{
-    val file = File(context.filesDir, "benchmark_results.txt")
-    file.writeText("")
-}
-
-//functie pentru citirea rezultatelor din fisier
-private fun readBenchmarkResults(context: Context): String
-{
-    val file = File(context.filesDir, "benchmark_results.txt")
-    return if (file.exists())
-    {
-        file.readText()
-
-    } else {
-        "No results available"
-    }
-}

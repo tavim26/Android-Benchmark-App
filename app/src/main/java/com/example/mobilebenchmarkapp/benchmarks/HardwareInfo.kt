@@ -76,14 +76,7 @@ class HardwareInfo(private val context: Context)
         )
     }
 
-    fun getInfo(infoTextView: TextView?)
-    {
-        val info = getInfoAsString()
-
-        benchmarkFile.writeText("Hardware Information:\n")
-        benchmarkFile.appendText(info)
-        infoTextView?.text = info
-    }
+ 
 
     fun getInfoAsString(): String
     {
