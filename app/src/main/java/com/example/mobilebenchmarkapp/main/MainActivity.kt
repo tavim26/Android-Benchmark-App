@@ -1,7 +1,6 @@
 package com.example.mobilebenchmarkapp.main
 
 import GpuBenchmark
-import HardwareInfo
 import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -44,8 +43,8 @@ fun BenchmarkScreen(modifier: Modifier = Modifier) {
     var memoryResults by remember { mutableStateOf("Memory Benchmark: \n") }
     var hardwareInfoResults by remember { mutableStateOf("Hardware Information: \n") }
 
-    val cpuBenchmark = CpuBenchmark { result -> cpuResults += "\n$result" }
-    val memoryBenchmark = MemoryBenchmark { result -> memoryResults += "\n$result" }
+    val cpuBenchmark = CpuBenchmark(context) { result -> cpuResults += "\n$result" }
+    val memoryBenchmark = MemoryBenchmark(context) { result -> memoryResults += "\n$result" }
     val gpuBenchmark = GpuBenchmark(context) { result -> gpuResults += "\n$result" }
     val hardwareInfoProvider = HardwareInfo(context)
 

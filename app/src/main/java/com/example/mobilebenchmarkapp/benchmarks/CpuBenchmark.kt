@@ -1,10 +1,16 @@
 package com.example.mobilebenchmarkapp.benchmarks
 
+import android.content.Context
+import java.io.File
 import java.util.concurrent.Executors
 import kotlin.system.measureTimeMillis
 
-class CpuBenchmark(private val onResult: (String) -> Unit) {
-    private val executor = Executors.newFixedThreadPool(4) // 4 fire pentru execuție paralelă
+class CpuBenchmark(
+    private val context: Context,
+    private val onResult: (String) -> Unit
+) {
+    private val executor = Executors.newFixedThreadPool(4)
+    private val resultsFile = File(context.filesDir, "cpu_results.txt")
 
     fun run() {
         executor.submit { runFactorialTest() }
@@ -15,30 +21,30 @@ class CpuBenchmark(private val onResult: (String) -> Unit) {
 
     private fun runFactorialTest() {
         val totalTime = measureTotalTime {
-            repeat(10) { calculateFactorial(100000000) }
+            repeat(10) { calculateFactorial(100000) }
         }
-        onResult("CPU Factorial Test (10 runs) total time: $totalTime ms")
+        logResult("CPU Factorial Test (10 runs) total time: $totalTime ms")
     }
 
     private fun runFibonacciTest() {
         val totalTime = measureTotalTime {
-            repeat(10) { generateFibonacci(100000000) }
+            repeat(10) { generateFibonacci(100000) }
         }
-        onResult("CPU Fibonacci Test (10 runs) total time: $totalTime ms")
+        logResult("CPU Fibonacci Test (10 runs) total time: $totalTime ms")
     }
 
     private fun runBubbleSortTest() {
         val totalTime = measureTotalTime {
             repeat(10) { bubbleSort(generateRandomArray(25000)) }
         }
-        onResult("CPU Bubble Sort Test (10 runs) total time: $totalTime ms")
+        logResult("CPU Bubble Sort Test (10 runs) total time: $totalTime ms")
     }
 
     private fun runQuickSortTest() {
         val totalTime = measureTotalTime {
             repeat(10) { quickSort(generateRandomArray(25000), 0, 9999) }
         }
-        onResult("CPU Quick Sort Test (10 runs) total time: $totalTime ms")
+        logResult("CPU Quick Sort Test (10 runs) total time: $totalTime ms")
     }
 
     private inline fun measureTotalTime(action: () -> Unit): Long {
@@ -107,5 +113,11 @@ class CpuBenchmark(private val onResult: (String) -> Unit) {
 
     private fun generateRandomArray(size: Int): IntArray {
         return IntArray(size) { (0..99999).random() }
+    }
+
+    private fun logResult(result: String) {
+        onResult(result)
+
+        resultsFile.appendText("$result\n")
     }
 }

@@ -1,3 +1,5 @@
+package com.example.mobilebenchmarkapp.benchmarks
+
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -6,17 +8,12 @@ import android.os.Build
 import android.app.ActivityManager
 import android.os.Environment
 import android.os.StatFs
-import android.widget.TextView
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileReader
 import kotlin.math.pow
 import kotlin.math.sqrt
+import java.io.File
+import java.io.FileWriter
 
-class HardwareInfo(private val context: Context)
-{
-
-    private val benchmarkFile: File = File(context.filesDir, "benchmark_results.txt")
+class HardwareInfo(private val context: Context) {
 
     private var totalRamMb: Long = 0
     private var availableRamMb: Long = 0
@@ -29,30 +26,25 @@ class HardwareInfo(private val context: Context)
     private var screenDensity: Int = 0
     private var screenSizeInches: Double = 0.0
 
+    private val resultsFile = File(context.filesDir, "hardware_results.txt")
+
     init {
         calculateHardwareInfo()
     }
 
-    private fun calculateHardwareInfo()
-    {
-        // Serviciul de gestionare al activităților
+    private fun calculateHardwareInfo() {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-
-        // Serviciul de gestionare al bateriei
         val batteryManager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
 
-        // Memorie
         val memoryInfo = ActivityManager.MemoryInfo()
         activityManager.getMemoryInfo(memoryInfo)
         totalRamMb = memoryInfo.totalMem / (1024 * 1024)
         availableRamMb = memoryInfo.availMem / (1024 * 1024)
 
-        // Stocare internă
         val statFs = StatFs(Environment.getDataDirectory().path)
         totalStorageMb = (statFs.blockCountLong * statFs.blockSizeLong) / (1024 * 1024)
         availableStorageMb = (statFs.availableBlocksLong * statFs.blockSizeLong) / (1024 * 1024)
 
-        // Baterie
         batteryCapacity = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
 
         val batteryIntent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
@@ -65,7 +57,6 @@ class HardwareInfo(private val context: Context)
             else -> "Unknown"
         }
 
-        // Ecran
         val displayMetrics = context.resources.displayMetrics
         screenWidth = displayMetrics.widthPixels
         screenHeight = displayMetrics.heightPixels
@@ -76,11 +67,8 @@ class HardwareInfo(private val context: Context)
         )
     }
 
- 
-
-    fun getInfoAsString(): String
-    {
-        return """
+    fun getInfoAsString(): String {
+        val result = """
             Complete Hardware Overview:
             - Device Model: ${Build.MODEL} (${Build.MANUFACTURER})
             - Brand: ${Build.BRAND}
@@ -110,17 +98,17 @@ class HardwareInfo(private val context: Context)
             - Density: ${screenDensity} dpi
             - Approximate Screen Size: ${"%.2f".format(screenSizeInches)} inches
         """.trimIndent()
+
+        logResult(result)
+        return result
     }
 
-    private fun getProcessorFrequency(): Int
-    {
+    private fun getProcessorFrequency(): Int {
         return try {
-
-            val reader = BufferedReader(FileReader("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq"))
+            val reader = File("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq").bufferedReader()
             val freq = reader.readLine()
             reader.close()
             freq.toInt() / 1000
-
         } catch (e: Exception) {
             0
         }
@@ -128,5 +116,11 @@ class HardwareInfo(private val context: Context)
 
     private fun getProcessorCores(): Int {
         return Runtime.getRuntime().availableProcessors()
+    }
+
+    private fun logResult(result: String) {
+        FileWriter(resultsFile, true).use { writer ->
+            writer.append(result).append("\n")
+        }
     }
 }
