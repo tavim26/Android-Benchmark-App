@@ -21,28 +21,28 @@ class CpuBenchmark(
 
     private fun runFactorialTest() {
         val totalTime = measureTotalTime {
-            repeat(10) { calculateFactorial(100000) }
+            repeat(10) { calculateFactorial(1000) }
         }
-        logResult("CPU Factorial Test (10 runs) total time: $totalTime ms")
+        logResult("CPU Factorial Test (100 runs) total time: $totalTime ms")
     }
 
     private fun runFibonacciTest() {
         val totalTime = measureTotalTime {
-            repeat(10) { generateFibonacci(100000) }
+            repeat(10) { generateFibonacci(1000) }
         }
-        logResult("CPU Fibonacci Test (10 runs) total time: $totalTime ms")
+        logResult("CPU Fibonacci Test (100 runs) total time: $totalTime ms")
     }
 
     private fun runBubbleSortTest() {
         val totalTime = measureTotalTime {
-            repeat(10) { bubbleSort(generateRandomArray(25000)) }
+            repeat(10) { bubbleSort(generateRandomArray(50000)) }
         }
         logResult("CPU Bubble Sort Test (10 runs) total time: $totalTime ms")
     }
 
     private fun runQuickSortTest() {
         val totalTime = measureTotalTime {
-            repeat(10) { quickSort(generateRandomArray(25000), 0, 9999) }
+            repeat(10) { quickSort(generateRandomArray(50000), 0, 9999) }
         }
         logResult("CPU Quick Sort Test (10 runs) total time: $totalTime ms")
     }
@@ -112,7 +112,7 @@ class CpuBenchmark(
     }
 
     private fun generateRandomArray(size: Int): IntArray {
-        return IntArray(size) { (0..99999).random() }
+        return IntArray(size) { (0..9999).random() }
     }
 
     private fun logResult(result: String) {

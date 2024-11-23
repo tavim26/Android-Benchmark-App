@@ -15,9 +15,9 @@ class MemoryBenchmark(
     private val resultsFile = File(context.filesDir, "memory_results.txt")
 
     fun run() {
-        executor.submit { runWriteTest(10) }
-        executor.submit { runReadTest(10) }
-        executor.submit { runMatrixAllocationTest(10, 1000) }
+        executor.submit { runWriteTest(1) }
+        executor.submit { runReadTest(1) }
+        executor.submit { runMatrixAllocationTest(10, 2000) }
     }
 
     private fun runWriteTest(mb: Int) {
