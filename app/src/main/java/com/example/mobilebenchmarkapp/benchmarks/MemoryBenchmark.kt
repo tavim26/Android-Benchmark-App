@@ -72,7 +72,6 @@ class MemoryBenchmark(
     }
 
     private fun readFromFile(file: File): ByteArray {
-        // Redeschidem fișierul pentru citire, evitând cache-ul
         return RandomAccessFile(file, "r").use { raf ->
             val fileLength = raf.length().toInt()
             val buffer = ByteArray(fileLength)
